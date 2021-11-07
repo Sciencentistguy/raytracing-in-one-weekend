@@ -3,6 +3,7 @@ use std::ops::DerefMut;
 
 use crate::Vec3;
 
+#[derive(Clone, Copy, PartialEq)]
 pub struct Point(pub Vec3);
 
 impl Deref for Point {
