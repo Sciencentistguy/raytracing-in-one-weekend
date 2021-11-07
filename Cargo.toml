@@ -4,3 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [features]
+
+[dependencies]
+cgmath = "0.18.0"
+image = "0.23.14"
