@@ -23,9 +23,9 @@ use ray::Ray;
 
 use crate::camera::Camera;
 use crate::hit::sphere::Sphere;
-use crate::mat::Material;
 use crate::mat::lambertian::Lambertian;
 use crate::mat::metal::Metal;
+use crate::mat::Material;
 
 const IMAGE_WIDTH: u32 = 1920;
 const IMAGE_HEIGHT: u32 = 1080;
@@ -39,18 +39,18 @@ fn main() {
         ndarray::Array2::<Colour>::zeros((IMAGE_WIDTH as usize, IMAGE_HEIGHT as usize));
 
     let ground = Lambertian {
-        albedo: Colour(Vec3::new(0.8,0.8,0.0)),
+        albedo: Colour(Vec3::new(0.8, 0.8, 0.0)),
     };
     let centre = Lambertian {
-        albedo: Colour(Vec3::new(0.7,0.3,0.3)),
+        albedo: Colour(Vec3::new(0.7, 0.3, 0.3)),
     };
     let left = Metal {
-        albedo: Colour(Vec3::new(0.8,0.8,0.8)),
+        albedo: Colour(Vec3::new(0.8, 0.8, 0.8)),
         fuzz: 0.3,
     };
     let right = Metal {
-        albedo: Colour(Vec3::new(0.8,0.6,0.2)),
-        fuzz: 1.0
+        albedo: Colour(Vec3::new(0.8, 0.6, 0.2)),
+        fuzz: 1.0,
     };
 
     let mut world = HittableList(Vec::new());
@@ -58,23 +58,22 @@ fn main() {
     world.0.push(Hittable::Sphere(Sphere {
         centre: Point(Vec3::new(-1, 0, -1)),
         radius: 0.5,
-        material: Material::Metal(left)
+        material: Material::Metal(&left),
     }));
     world.0.push(Hittable::Sphere(Sphere {
         centre: Point(Vec3::new(1, 0, -1)),
         radius: 0.5,
-        material: Material::Metal(right)
+        material: Material::Metal(&right),
     }));
     world.0.push(Hittable::Sphere(Sphere {
         centre: Point(Vec3::new(0, 0, -1)),
         radius: 0.5,
-        material: Material::Lambertian(centre)
+        material: Material::Lambertian(&centre),
     }));
-
     world.0.push(Hittable::Sphere(Sphere {
         centre: Point(Vec3::new(0.0, -100.5, -1.0)),
         radius: 100.0,
-        material: Material::Lambertian(ground)
+        material: Material::Lambertian(&ground),
     }));
 
     let camera = Camera::new();
@@ -110,7 +109,6 @@ fn main() {
             image.put_pixel(i, IMAGE_HEIGHT - 1 - j, pix.to_pixel(SAMPLES_PER_PIXEL));
         }
     }
-
 
     image.save("image.png").unwrap();
 }

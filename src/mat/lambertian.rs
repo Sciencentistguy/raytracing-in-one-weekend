@@ -1,13 +1,15 @@
 use crate::{colour::Colour, hit::HitRecord, ray::Ray, Vec3};
 
-#[derive(Clone, Copy)]
+#[repr(transparent)]
 pub struct Lambertian {
     pub albedo: Colour,
 }
 
 impl Lambertian {
     pub fn scatter(&self, ray: &Ray, rec: &HitRecord) -> (Colour, Ray) {
-        let mut scatter_direction = rec.normal + Vec3::random_unit_vector();
+        //let mut scatter_direction = rec.normal + Vec3::random_unit_vector();
+        let mut scatter_direction =
+            (rec.p.0 + rec.normal + Vec3::random_in_unit_sphere()) - rec.p.0;
 
         if scatter_direction.is_near_zero() {
             scatter_direction = rec.normal;

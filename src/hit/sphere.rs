@@ -7,13 +7,13 @@ use crate::{mat::Material, point::Point, ray::Ray};
 
 use super::HitRecord;
 
-pub struct Sphere {
+pub struct Sphere<'a> {
     pub centre: Point,
     pub radius: f64,
-    pub material: Material,
+    pub material: Material<'a>,
 }
 
-impl Sphere {
+impl Sphere<'_> {
     pub fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         let oc = ray.origin.0 - self.centre.0;
         let a = ray.direction.length_squared();
@@ -46,8 +46,7 @@ impl Sphere {
             normal,
             t,
             front_face,
-            material: self.material,
-
+            material: self.material.clone(),
         })
     }
 }

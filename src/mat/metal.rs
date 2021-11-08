@@ -1,6 +1,5 @@
 use crate::{colour::Colour, hit::HitRecord, ray::Ray, Vec3};
 
-#[derive(Clone, Copy)]
 pub struct Metal {
     pub albedo: Colour,
     pub fuzz: f64,

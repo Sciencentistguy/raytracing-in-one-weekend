@@ -4,6 +4,7 @@ use image::Rgb;
 
 use crate::Vec3;
 
+#[repr(transparent)]
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub struct Colour(pub Vec3);
 

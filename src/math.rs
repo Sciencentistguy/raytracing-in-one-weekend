@@ -5,6 +5,7 @@ use std::{
 
 use cgmath::{prelude::*, Vector3};
 
+#[repr(transparent)]
 #[derive(Clone, Copy, PartialEq)]
 pub struct Vec3(pub Vector3<f64>);
 

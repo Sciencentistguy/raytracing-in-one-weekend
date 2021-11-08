@@ -1,9 +1,9 @@
 use std::ops::Deref;
 use std::ops::DerefMut;
-use std::ops::Sub;
 
 use crate::Vec3;
 
+#[repr(transparent)]
 #[derive(Clone, Copy, PartialEq)]
 pub struct Point(pub Vec3);
 

@@ -7,15 +7,15 @@ use crate::{mat::Material, point::Point, ray::Ray, Vec3};
 
 use self::list::HittableList;
 
-pub struct HitRecord {
+pub struct HitRecord<'a> {
     pub p: Point,
     pub normal: Vec3,
-    pub material: Material,
+    pub material: Material<'a>,
     pub t: f64,
     pub front_face: bool,
 }
 
-impl HitRecord {
+impl HitRecord<'_> {
     pub fn face_and_normal(ray: &Ray, outward_normal: Vec3) -> (bool, Vec3) {
         let ff = ray.direction.dot(outward_normal.0).is_sign_negative();
         if ff {
@@ -26,12 +26,12 @@ impl HitRecord {
     }
 }
 
-pub enum Hittable {
-    Sphere(sphere::Sphere),
-    List(HittableList),
+pub enum Hittable<'a> {
+    Sphere(sphere::Sphere<'a>),
+    List(HittableList<'a>),
 }
 
-impl Hittable {
+impl Hittable<'_> {
     pub fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         match self {
             Hittable::Sphere(sphere) => sphere.hit(ray, t_min, t_max),
