@@ -1,21 +1,25 @@
 mod colour;
+mod hit;
 mod math;
 mod point;
 mod ray;
 
-use core::slice;
+use std::f64::INFINITY;
 
-use crate::colour::Colour;
-
+use cgmath::num_traits::Pow;
 #[allow(unused_imports)]
 use cgmath::prelude::*;
-
-use image::{Rgb, RgbImage};
-pub use math::Vec3;
 use ndarray::Axis;
+
+use colour::Colour;
+use hit::list::HittableList;
+use hit::Hittable;
+use image::RgbImage;
+pub use math::Vec3;
 use point::Point;
 use ray::Ray;
-use static_assertions::const_assert_eq;
+
+use crate::hit::sphere::Sphere;
 
 const IMAGE_WIDTH: u32 = 1920;
 const IMAGE_HEIGHT: u32 = 1080;
@@ -24,6 +28,16 @@ const IMAGE_ASPECT_RATIO: f64 = 1.777_777_777_777_777_7;
 fn main() {
     let mut pixels =
         ndarray::Array2::<Colour>::zeros((IMAGE_WIDTH as usize, IMAGE_HEIGHT as usize));
+
+    let mut world = HittableList(Vec::new());
+    world.0.push(Hittable::Sphere(Sphere {
+        centre: Point(Vec3::new(0, 0, -1)),
+        radius: 0.5,
+    }));
+    world.0.push(Hittable::Sphere(Sphere {
+        centre: Point(Vec3::new(0.0, -100.5, -1.0)),
+        radius: 100.0,
+    }));
 
     let viewport_height = 2f64;
     let viewport_width = 2f64 * IMAGE_ASPECT_RATIO;
@@ -44,10 +58,10 @@ fn main() {
                 let u = row_number as f64 / (IMAGE_WIDTH as f64 - 1f64);
                 let v = col_number as f64 / (IMAGE_HEIGHT as f64 - 1f64);
                 let r = Ray {
-                    orig: origin,
-                    dir: lower_left_corner + u * horizontal + v * vertical - origin.0,
+                    origin,
+                    direction: lower_left_corner + u * horizontal + v * vertical - origin.0,
                 };
-                let colour = ray_colour(&r);
+                let colour = ray_colour(&r, &world);
                 *pixel = colour;
             }
         });
@@ -75,21 +89,26 @@ fn main() {
     image.save("image.png").unwrap();
 }
 
-fn ray_colour(ray: &Ray) -> Colour {
-    fn hit_sphere(centre: Point, radius: f64, ray: &Ray) -> bool {
-        let oc = ray.orig.0 - centre.0;
-        let a = ray.dir.dot(ray.dir.0);
-        let b = 2.0 * oc.dot(ray.dir.0);
-        let c = oc.dot(oc.0) - radius * radius;
-        let disc = b * b - 4f64 * a * c;
-        disc > 0.0
+fn ray_colour(ray: &Ray, world: &HittableList) -> Colour {
+    if let Some(hit) = world.hit(ray, 0.0, INFINITY) {
+        return Colour(0.5 * (hit.normal + Vec3::new(1, 1, 1)));
     }
 
-    if hit_sphere(Point(Vec3::new(0, 0, -1)), 0.5, ray) {
-        return Colour(Vec3::new(1, 0, 0));
-    }
-
-    let unit_dir = ray.dir.unit_vec();
+    let unit_dir = ray.direction.unit_vec();
     let t = 0.5 * (unit_dir.y + 1.0);
     Colour((1.0 - t) * Vec3::new(1, 1, 1) + t * Vec3::new(0.4, 0.7, 1.0))
+}
+
+fn hit_sphere(centre: Point, radius: f64, ray: &Ray) -> f64 {
+    let oc = ray.origin.0 - centre.0;
+    let a = ray.direction.length_squared();
+    let half_b = oc.dot(ray.direction.0);
+    let c = oc.length_squared() - radius.pow(2);
+    let discriminant: f64 = half_b.pow(2) - a * c;
+
+    if discriminant.is_sign_negative() {
+        -1.0
+    } else {
+        (-half_b - discriminant.sqrt()) / a
+    }
 }

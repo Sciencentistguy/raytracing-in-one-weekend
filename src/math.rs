@@ -1,7 +1,4 @@
-use std::{
-    fmt::{Debug, Display},
-    ops::{Add, AddAssign, Deref, DerefMut, Div, DivAssign, Mul, MulAssign, Sub},
-};
+use std::{fmt::{Debug, Display}, ops::{Add, AddAssign, Deref, DerefMut, Div, DivAssign, Mul, MulAssign, Neg, Sub}};
 
 use cgmath::{prelude::*, Vector3};
 
@@ -182,6 +179,14 @@ where
 {
     fn div_assign(&mut self, rhs: T) {
         *self = *self / rhs.into()
+    }
+}
+
+impl Neg for Vec3 {
+    type Output = Self;
+
+    fn neg(self) -> Self::Output {
+        Self(self.0.neg())
     }
 }
 
