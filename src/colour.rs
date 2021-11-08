@@ -1,4 +1,4 @@
-use std::ops::{Add, Deref, DerefMut};
+use std::ops::{Add, AddAssign, Deref, DerefMut};
 
 use image::Rgb;
 
@@ -6,6 +6,21 @@ use crate::Vec3;
 
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub struct Colour(pub Vec3);
+
+impl Colour {
+    pub fn to_pixel(self, num_samples: usize) -> Rgb<u8> {
+        let scale = 1.0 / num_samples as f64;
+        let r = self.x * scale;
+        let g = self.y * scale;
+        let b = self.z * scale;
+
+        let r = (r.clamp(0.0, 0.999) * 256.0) as u8;
+        let g = (g.clamp(0.0, 0.999) * 256.0) as u8;
+        let b = (b.clamp(0.0, 0.999) * 256.0) as u8;
+
+        Rgb([r, g, b])
+    }
+}
 
 impl Deref for Colour {
     type Target = Vec3;
@@ -17,15 +32,6 @@ impl Deref for Colour {
 impl DerefMut for Colour {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.0
-    }
-}
-
-impl From<Colour> for Rgb<u8> {
-    fn from(val: Colour) -> Self {
-        let r = (val.0.x * 255.99) as u8;
-        let g = (val.0.y * 255.99) as u8;
-        let b = (val.0.z * 255.99) as u8;
-        Rgb([r, g, b])
     }
 }
 
@@ -44,5 +50,11 @@ impl cgmath::Zero for Colour {
 
     fn is_zero(&self) -> bool {
         self == &Self::zero()
+    }
+}
+
+impl AddAssign for Colour {
+    fn add_assign(&mut self, rhs: Self) {
+        *self = *self + rhs
     }
 }

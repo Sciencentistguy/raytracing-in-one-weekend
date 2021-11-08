@@ -1,3 +1,4 @@
+mod camera;
 mod colour;
 mod hit;
 mod math;
@@ -10,6 +11,7 @@ use cgmath::num_traits::Pow;
 #[allow(unused_imports)]
 use cgmath::prelude::*;
 use ndarray::Axis;
+use rand::Rng;
 
 use colour::Colour;
 use hit::list::HittableList;
@@ -19,11 +21,14 @@ pub use math::Vec3;
 use point::Point;
 use ray::Ray;
 
+use crate::camera::Camera;
 use crate::hit::sphere::Sphere;
 
 const IMAGE_WIDTH: u32 = 1920;
 const IMAGE_HEIGHT: u32 = 1080;
-const IMAGE_ASPECT_RATIO: f64 = 1.777_777_777_777_777_7;
+const ASPECT_RATIO: f64 = 1.777_777_777_777_777_7;
+
+const SAMPLES_PER_PIXEL: usize = 100;
 
 fn main() {
     let mut pixels =
@@ -39,15 +44,7 @@ fn main() {
         radius: 100.0,
     }));
 
-    let viewport_height = 2f64;
-    let viewport_width = 2f64 * IMAGE_ASPECT_RATIO;
-    let focal_length = 1f64;
-
-    let origin = Point(Vec3::zero());
-    let horizontal = Vec3::new(viewport_width, 0.0, 0.0);
-    let vertical = Vec3::new(0.0, viewport_height, 0.0);
-    let lower_left_corner =
-        origin.0 - horizontal / 2 - vertical / 2 - Vec3::new(0.0, 0.0, focal_length);
+    let camera = Camera::new();
 
     pixels
         .outer_iter_mut()
@@ -55,13 +52,15 @@ fn main() {
         .enumerate()
         .for_each(|(row_number, mut row)| {
             for (col_number, pixel) in row.iter_mut().enumerate() {
-                let u = row_number as f64 / (IMAGE_WIDTH as f64 - 1f64);
-                let v = col_number as f64 / (IMAGE_HEIGHT as f64 - 1f64);
-                let r = Ray {
-                    origin,
-                    direction: lower_left_corner + u * horizontal + v * vertical - origin.0,
-                };
-                let colour = ray_colour(&r, &world);
+                let mut colour = Colour(Vec3::zero());
+                for _ in 0..SAMPLES_PER_PIXEL {
+                    let u = (row_number as f64 + rand_f64!()) / (IMAGE_WIDTH as f64 - 1f64);
+                    let v = (col_number as f64 + rand_f64!()) / (IMAGE_HEIGHT as f64 - 1f64);
+                    let r = camera.get_ray(u, v);
+
+                    colour += ray_colour(&r, &world);
+                }
+
                 *pixel = colour;
             }
         });
@@ -74,15 +73,7 @@ fn main() {
     for j in 0..IMAGE_HEIGHT {
         for i in 0..IMAGE_WIDTH {
             let pix = pixels.get((i as usize, j as usize)).unwrap();
-            image.put_pixel(
-                i,
-                IMAGE_HEIGHT - 1 - j,
-                image::Rgb([
-                    (pix.x * 255.999) as u8,
-                    (pix.y * 255.999) as u8,
-                    (pix.z * 255.999) as u8,
-                ]),
-            );
+            image.put_pixel(i, IMAGE_HEIGHT - 1 - j, pix.to_pixel(SAMPLES_PER_PIXEL));
         }
     }
 
@@ -111,4 +102,14 @@ fn hit_sphere(centre: Point, radius: f64, ray: &Ray) -> f64 {
     } else {
         (-half_b - discriminant.sqrt()) / a
     }
+}
+
+#[macro_export]
+macro_rules! rand_f64 {
+    () => {
+        rand::thread_rng().gen_range(0.0..=1.0)
+    };
+    ($rng:expr) => {
+        rand::thread_rng().gen_range(rng)
+    };
 }
