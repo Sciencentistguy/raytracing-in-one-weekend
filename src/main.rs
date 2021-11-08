@@ -12,6 +12,7 @@ use cgmath::num_traits::Pow;
 use cgmath::prelude::*;
 use ndarray::Axis;
 use rand::Rng;
+use rayon::prelude::*;
 
 use colour::Colour;
 use hit::list::HittableList;
@@ -46,9 +47,11 @@ fn main() {
 
     let camera = Camera::new();
 
+    let start = std::time::Instant::now();
+
     pixels
         .outer_iter_mut()
-        .into_iter()
+        .into_par_iter()
         .enumerate()
         .for_each(|(row_number, mut row)| {
             for (col_number, pixel) in row.iter_mut().enumerate() {
@@ -77,7 +80,11 @@ fn main() {
         }
     }
 
+    println!("Took {:?}", start.elapsed());
+
     image.save("image.png").unwrap();
+
+
 }
 
 fn ray_colour(ray: &Ray, world: &HittableList) -> Colour {
