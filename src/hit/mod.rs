@@ -1,15 +1,16 @@
 pub mod list;
 pub mod sphere;
 
-use cgmath::{num_traits::Float, InnerSpace};
+use cgmath::InnerSpace;
 
-use crate::{point::Point, ray::Ray, Vec3};
+use crate::{mat::Material, point::Point, ray::Ray, Vec3};
 
 use self::list::HittableList;
 
 pub struct HitRecord {
     pub p: Point,
     pub normal: Vec3,
+    pub material: Material,
     pub t: f64,
     pub front_face: bool,
 }

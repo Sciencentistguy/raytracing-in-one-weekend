@@ -66,6 +66,15 @@ impl Vec3 {
     pub fn unit_vec(&self) -> Self {
         self / self.length()
     }
+
+    pub fn is_near_zero(&self) -> bool {
+        const EP: f64 = 1e-8;
+        (f64::abs(self.x) < EP) && (f64::abs(self.y) < EP) && (f64::abs(self.z) < EP)
+    }
+
+    pub fn reflect(&self, normal: &Self) -> Self {
+        self - &(2.0 * self.dot(normal.0) * normal)
+    }
 }
 
 impl Deref for Vec3 {

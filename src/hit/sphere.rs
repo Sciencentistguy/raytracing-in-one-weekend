@@ -3,13 +3,14 @@ use cgmath::{
     InnerSpace,
 };
 
-use crate::{point::Point, ray::Ray};
+use crate::{mat::Material, point::Point, ray::Ray};
 
 use super::HitRecord;
 
 pub struct Sphere {
     pub centre: Point,
     pub radius: f64,
+    pub material: Material,
 }
 
 impl Sphere {
@@ -45,6 +46,8 @@ impl Sphere {
             normal,
             t,
             front_face,
+            material: self.material,
+
         })
     }
 }
