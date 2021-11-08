@@ -11,7 +11,6 @@ use cgmath::num_traits::Pow;
 #[allow(unused_imports)]
 use cgmath::prelude::*;
 use ndarray::Axis;
-use rand::Rng;
 use rayon::prelude::*;
 
 use colour::Colour;
@@ -30,6 +29,7 @@ const IMAGE_HEIGHT: u32 = 1080;
 const ASPECT_RATIO: f64 = 1.777_777_777_777_777_7;
 
 const SAMPLES_PER_PIXEL: usize = 100;
+const MAX_RAY_DEPTH: usize = 50;
 
 fn main() {
     let mut pixels =
@@ -61,7 +61,7 @@ fn main() {
                     let v = (col_number as f64 + rand_f64!()) / (IMAGE_HEIGHT as f64 - 1f64);
                     let r = camera.get_ray(u, v);
 
-                    colour += ray_colour(&r, &world);
+                    colour += ray_colour(&r, &world, 0);
                 }
 
                 *pixel = colour;
@@ -83,13 +83,27 @@ fn main() {
     println!("Took {:?}", start.elapsed());
 
     image.save("image.png").unwrap();
-
-
 }
 
-fn ray_colour(ray: &Ray, world: &HittableList) -> Colour {
-    if let Some(hit) = world.hit(ray, 0.0, INFINITY) {
-        return Colour(0.5 * (hit.normal + Vec3::new(1, 1, 1)));
+fn ray_colour(ray: &Ray, world: &HittableList, depth: usize) -> Colour {
+    if depth > MAX_RAY_DEPTH {
+        return Colour(Vec3::zero());
+    }
+
+    if let Some(hit) = world.hit(ray, 0.001, INFINITY) {
+        //let target = hit.p.0 + hit.normal + Vec3::random_unit_vector();
+        let target = hit.p.0 + Vec3::random_in_hemisphere(hit.normal);
+        return Colour(
+            0.5 * ray_colour(
+                &Ray {
+                    origin: hit.p,
+                    direction: target - hit.p.0,
+                },
+                world,
+                depth + 1,
+            )
+            .0,
+        );
     }
 
     let unit_dir = ray.direction.unit_vec();
@@ -97,26 +111,14 @@ fn ray_colour(ray: &Ray, world: &HittableList) -> Colour {
     Colour((1.0 - t) * Vec3::new(1, 1, 1) + t * Vec3::new(0.4, 0.7, 1.0))
 }
 
-fn hit_sphere(centre: Point, radius: f64, ray: &Ray) -> f64 {
-    let oc = ray.origin.0 - centre.0;
-    let a = ray.direction.length_squared();
-    let half_b = oc.dot(ray.direction.0);
-    let c = oc.length_squared() - radius.pow(2);
-    let discriminant: f64 = half_b.pow(2) - a * c;
-
-    if discriminant.is_sign_negative() {
-        -1.0
-    } else {
-        (-half_b - discriminant.sqrt()) / a
-    }
-}
-
 #[macro_export]
 macro_rules! rand_f64 {
-    () => {
+    () => {{
+        use rand::Rng;
         rand::thread_rng().gen_range(0.0..=1.0)
-    };
-    ($rng:expr) => {
-        rand::thread_rng().gen_range(rng)
-    };
+    }};
+    ($rng:expr) => {{
+        use rand::Rng;
+        rand::thread_rng().gen_range($rng)
+    }};
 }

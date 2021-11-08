@@ -10,9 +10,9 @@ pub struct Colour(pub Vec3);
 impl Colour {
     pub fn to_pixel(self, num_samples: usize) -> Rgb<u8> {
         let scale = 1.0 / num_samples as f64;
-        let r = self.x * scale;
-        let g = self.y * scale;
-        let b = self.z * scale;
+        let r = (self.x * scale).sqrt();
+        let g = (self.y * scale).sqrt();
+        let b = (self.z * scale).sqrt();
 
         let r = (r.clamp(0.0, 0.999) * 256.0) as u8;
         let g = (g.clamp(0.0, 0.999) * 256.0) as u8;

@@ -1,4 +1,7 @@
-use std::{fmt::{Debug, Display}, ops::{Add, AddAssign, Deref, DerefMut, Div, DivAssign, Mul, MulAssign, Neg, Sub}};
+use std::{
+    fmt::{Debug, Display},
+    ops::{Add, AddAssign, Deref, DerefMut, Div, DivAssign, Mul, MulAssign, Neg, Range, Sub},
+};
 
 use cgmath::{prelude::*, Vector3};
 
@@ -13,8 +16,43 @@ impl Vec3 {
             z: z.into(),
         })
     }
+
     pub fn zero() -> Self {
         Self::new(0f64, 0f64, 0f64)
+    }
+
+    pub fn random() -> Self {
+        Self::new(crate::rand_f64!(), crate::rand_f64!(), crate::rand_f64!())
+    }
+
+    pub fn random_with_range(start: f64, end: f64) -> Self {
+        Self::new(
+            crate::rand_f64!(start..=end),
+            crate::rand_f64!(start..=end),
+            crate::rand_f64!(start..=end),
+        )
+    }
+
+    pub fn random_in_unit_sphere() -> Self {
+        loop {
+            let p = Self::random_with_range(-1.0, 1.0);
+            if p.length_squared() < 1.0 {
+                break p;
+            }
+        }
+    }
+
+    pub fn random_unit_vector() -> Self {
+        Self::random_in_unit_sphere().unit_vec()
+    }
+
+    pub fn random_in_hemisphere(normal: Self) -> Self {
+        let in_unit_sphere = Self::random_in_unit_sphere();
+        if in_unit_sphere.dot(normal.0).is_sign_positive() {
+            in_unit_sphere
+        } else {
+            -in_unit_sphere
+        }
     }
 
     pub fn length_squared(&self) -> f64 {
