@@ -22,6 +22,8 @@ use mat::Material;
 pub use math::Vec3;
 use ray::Ray;
 
+use crate::mat::dielectric::Dielectric;
+
 const IMAGE_WIDTH: u32 = 1920;
 const IMAGE_HEIGHT: u32 = 1080;
 const ASPECT_RATIO: f64 = 1.777_777_777_777_777_7;
@@ -36,31 +38,33 @@ fn main() {
         albedo: Vec3::new(0.8, 0.8, 0.0),
     };
     let centre = Lambertian {
-        albedo: Vec3::new(0.7, 0.3, 0.3),
+        albedo: Vec3::new(0.1, 0.2, 0.5),
     };
-    let left = Metal {
-        albedo: Vec3::new(0.8, 0.8, 0.8),
-        fuzz: 0.3,
-    };
+    let left = Dielectric { ir: 1.5 };
     let right = Metal {
         albedo: Vec3::new(0.8, 0.6, 0.2),
-        fuzz: 1.0,
+        fuzz: 0.0,
     };
 
     let mut world = HittableList(Vec::new());
 
     world.0.push(Hittable::Sphere(Sphere {
-        centre: Vec3::new(-1, 0, -1),
-        radius: 0.5,
-        material: Material::Metal(&left),
+        centre: Vec3::new(-1.0, 0.0, -1.0),
+        radius: -0.4,
+        material: Material::Dielectric(left),
     }));
     world.0.push(Hittable::Sphere(Sphere {
-        centre: Vec3::new(1, 0, -1),
+        centre: Vec3::new(-1.0, 0.0, -1.0),
+        radius: 0.5,
+        material: Material::Dielectric(left),
+    }));
+    world.0.push(Hittable::Sphere(Sphere {
+        centre: Vec3::new(1.0, 0.0, -1.0),
         radius: 0.5,
         material: Material::Metal(&right),
     }));
     world.0.push(Hittable::Sphere(Sphere {
-        centre: Vec3::new(0, 0, -1),
+        centre: Vec3::new(0.0, 0.0, -1.0),
         radius: 0.5,
         material: Material::Lambertian(&centre),
     }));
@@ -115,14 +119,13 @@ fn ray_colour(ray: &Ray, world: &HittableList, depth: i32) -> Vec3 {
         match world.hit(ray, 0.001, INFINITY) {
             Some(hit) => {
                 let (attenuation, scattered) = hit.material.scatter(ray, &hit);
-
                 let r = ray_colour(&scattered, world, depth - 1);
                 attenuation * r
             }
             None => {
                 let unit_dir = ray.direction.unit_vec();
                 let t = 0.5 * (unit_dir.y + 1.0);
-                (1.0 - t) * Vec3::new(1, 1, 1) + t * Vec3::new(0.4, 0.7, 1.0)
+                (1.0 - t) * Vec3::one() + t * Vec3::new(0.4, 0.7, 1.0)
             }
         }
     }

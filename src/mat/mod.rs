@@ -1,14 +1,16 @@
+pub mod dielectric;
 pub mod lambertian;
 pub mod metal;
 
 use crate::{hit::HitRecord, ray::Ray, Vec3};
 
-use self::{lambertian::Lambertian, metal::Metal};
+use self::{dielectric::Dielectric, lambertian::Lambertian, metal::Metal};
 
 #[derive(Clone)]
 pub enum Material<'a> {
     Lambertian(&'a Lambertian),
     Metal(&'a Metal),
+    Dielectric(Dielectric),
 }
 
 impl Material<'_> {
@@ -17,6 +19,7 @@ impl Material<'_> {
         match self {
             Material::Lambertian(l) => l.scatter(ray, rec),
             Material::Metal(m) => m.scatter(ray, rec),
+            Material::Dielectric(d) => d.scatter(ray, rec),
         }
     }
 }

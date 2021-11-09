@@ -1,6 +1,6 @@
 use std::{
     fmt::{Debug, Display},
-    ops::{Add, AddAssign, Deref, DerefMut, Div, DivAssign, Mul, MulAssign, Neg, Range, Sub},
+    ops::{Add, AddAssign, Deref, DerefMut, Div, DivAssign, Mul, MulAssign, Neg, Sub},
 };
 
 use cgmath::{prelude::*, AbsDiffEq, Vector3};
@@ -12,16 +12,16 @@ use rand::{distributions::Uniform, prelude::*};
 pub struct Vec3(pub Vector3<f64>);
 
 impl Vec3 {
-    pub fn new<T: Into<f64>>(x: T, y: T, z: T) -> Self {
-        Self(Vector3 {
-            x: x.into(),
-            y: y.into(),
-            z: z.into(),
-        })
+    pub const fn new(x: f64, y: f64, z: f64) -> Self {
+        Self(Vector3 { x, y, z })
     }
 
-    pub fn zero() -> Self {
-        Self::new(0f64, 0f64, 0f64)
+    pub const fn zero() -> Self {
+        Self::new(0.0, 0.0, 0.0)
+    }
+
+    pub const fn one() -> Self {
+        Self::new(1.0, 1.0, 1.0)
     }
 
     pub fn random() -> Self {
@@ -91,6 +91,13 @@ impl Vec3 {
         let b = (b.clamp(0.0, 0.999) * 256.0) as u8;
 
         Rgb([r, g, b])
+    }
+
+    pub fn refract(&self, n: &Self, etai_over_etat: f64) -> Self {
+        let cos_theta = (-self).dot(n.0).min(1.0);
+        let r_out_perp = etai_over_etat * (self + &(cos_theta * n));
+        let r_out_parallel = -((1.0 - r_out_perp.length_squared()).abs()).sqrt() * n;
+        r_out_perp + r_out_parallel
     }
 }
 
@@ -272,6 +279,15 @@ impl Neg for Vec3 {
     }
 }
 
+impl Neg for &Vec3 {
+    type Output = Vec3;
+
+    #[inline]
+    fn neg(self) -> Self::Output {
+        Vec3(self.0.neg())
+    }
+}
+
 impl Debug for Vec3 {
     #[inline]
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -296,4 +312,10 @@ impl Zero for Vec3 {
     fn is_zero(&self) -> bool {
         self == &Self::zero()
     }
+}
+
+#[inline]
+pub fn shlick_reflectance(cosine: f64, refractive_index: f64) -> f64 {
+    let r0 = ((1.0 - refractive_index) / (1.0 + refractive_index)).powi(2);
+    r0 + (1.0 - r0) * (1.0 - cosine).powi(5)
 }

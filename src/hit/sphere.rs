@@ -16,9 +16,9 @@ impl Sphere<'_> {
         let oc = ray.origin - self.centre;
         let a = ray.direction.length_squared();
         let half_b = oc.dot(ray.direction.0);
-        let c = oc.length_squared() - self.radius.pow(2);
+        let c = oc.length_squared() - self.radius.powi(2);
 
-        let discriminant: f64 = half_b.pow(2) - a * c;
+        let discriminant: f64 = half_b.powi(2) - a * c;
         if discriminant.is_sign_negative() {
             return None;
         }
