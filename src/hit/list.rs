@@ -5,6 +5,7 @@ use super::{HitRecord, Hittable};
 pub struct HittableList<'a>(pub Vec<Hittable<'a>>);
 
 impl HittableList<'_> {
+    #[inline]
     pub fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         let mut rec = None;
         let mut closest_so_far = t_max;

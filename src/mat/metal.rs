@@ -1,12 +1,13 @@
-use crate::{colour::Colour, hit::HitRecord, ray::Ray, Vec3};
+use crate::{hit::HitRecord, ray::Ray, Vec3};
 
 pub struct Metal {
-    pub albedo: Colour,
+    pub albedo: Vec3,
     pub fuzz: f64,
 }
 
 impl Metal {
-    pub fn scatter(&self, ray: &Ray, rec: &HitRecord) -> (Colour, Ray) {
+    #[inline(always)]
+    pub fn scatter(&self, ray: &Ray, rec: &HitRecord) -> (Vec3, Ray) {
         let reflected = ray.direction.unit_vec().reflect(&rec.normal);
         let scattered = Ray {
             origin: rec.p,

@@ -1,18 +1,19 @@
 pub mod lambertian;
 pub mod metal;
 
-use crate::{colour::Colour, hit::HitRecord, ray::Ray};
+use crate::{hit::HitRecord, ray::Ray, Vec3};
 
 use self::{lambertian::Lambertian, metal::Metal};
 
 #[derive(Clone)]
 pub enum Material<'a> {
     Lambertian(&'a Lambertian),
-    Metal(&'a Metal)
+    Metal(&'a Metal),
 }
 
 impl Material<'_> {
-    pub fn scatter(&self, ray: &Ray, rec: &HitRecord) -> Option<(Colour, Ray)> {
+    #[inline]
+    pub fn scatter(&self, ray: &Ray, rec: &HitRecord) -> Option<(Vec3, Ray)> {
         match self {
             Material::Lambertian(l) => Some(l.scatter(ray, rec)),
             Material::Metal(m) => Some(m.scatter(ray, rec)),

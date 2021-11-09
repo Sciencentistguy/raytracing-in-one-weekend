@@ -1,21 +1,19 @@
-use cgmath::{
-    num_traits::{Float, Pow},
-    InnerSpace,
-};
+use cgmath::{num_traits::Pow, InnerSpace};
 
-use crate::{mat::Material, point::Point, ray::Ray};
+use crate::{mat::Material, ray::Ray, Vec3};
 
 use super::HitRecord;
 
 pub struct Sphere<'a> {
-    pub centre: Point,
+    pub centre: Vec3,
     pub radius: f64,
     pub material: Material<'a>,
 }
 
 impl Sphere<'_> {
+    #[inline]
     pub fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
-        let oc = ray.origin.0 - self.centre.0;
+        let oc = ray.origin - self.centre;
         let a = ray.direction.length_squared();
         let half_b = oc.dot(ray.direction.0);
         let c = oc.length_squared() - self.radius.pow(2);
@@ -26,11 +24,11 @@ impl Sphere<'_> {
         }
         let sqrtd = discriminant.sqrt();
 
-        let root = (-half_b - sqrtd) / a;
-        let rng = t_min..t_max;
-        if !rng.contains(&root) {
-            let root = (-half_b + sqrtd) / a;
-            if !rng.contains(&root) {
+        let mut root = (-half_b - sqrtd) / a;
+
+        if root < t_min || t_max < root {
+            root = (-half_b + sqrtd) / a;
+            if root < t_min || t_max < root {
                 return None;
             }
         }
@@ -38,7 +36,7 @@ impl Sphere<'_> {
         let p = ray.at(root);
         let t = root;
 
-        let outward_normal = (p.0 - self.centre.0) / self.radius;
+        let outward_normal = (p - self.centre) / self.radius;
         let (front_face, normal) = HitRecord::face_and_normal(ray, outward_normal);
 
         Some(HitRecord {
