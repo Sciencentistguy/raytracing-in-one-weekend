@@ -3,10 +3,14 @@ use cgmath::{Angle, Deg, Rad};
 use crate::{ray::Ray, Vec3};
 
 pub struct Camera {
-    pub origin: Vec3,
-    pub lower_left_corner: Vec3,
-    pub horizontal: Vec3,
-    pub vertical: Vec3,
+    origin: Vec3,
+    lower_left_corner: Vec3,
+    horizontal: Vec3,
+    vertical: Vec3,
+    w: Vec3,
+    u: Vec3,
+    v: Vec3,
+    lens_radius: f64,
 }
 
 impl Camera {
@@ -16,6 +20,8 @@ impl Camera {
         vert: Vec3,
         vfov: Deg<f64>,
         aspect_ratio: f64,
+        aperture: f64,
+        focus_dist: f64,
     ) -> Self {
         let theta = Rad::from(vfov);
         let h = (theta / 2.0).tan();
@@ -30,24 +36,34 @@ impl Camera {
 
         let origin = position;
 
-        let horizontal = viewport_width * u;
-        let vertical = viewport_height * v;
-        let lower_left_corner = origin - horizontal / 2 - vertical / 2 - w;
+        let horizontal = focus_dist * viewport_width * u;
+        let vertical = focus_dist * viewport_height * v;
+        let lower_left_corner = origin - horizontal / 2 - vertical / 2 - focus_dist * w;
+
+        let lens_radius = aperture / 2.0;
 
         Self {
             origin,
             lower_left_corner,
             horizontal,
             vertical,
+            w,
+            u,
+            v,
+            lens_radius,
         }
     }
 
     #[inline]
-    pub fn get_ray(&self, u: f64, v: f64) -> Ray {
+    pub fn get_ray(&self, s: f64, t: f64) -> Ray {
+        let rd = self.lens_radius * Vec3::random_in_unit_disc();
+        let offset = self.u * rd.x + self.v * rd.y;
+
         Ray {
-            origin: self.origin,
-            direction: self.lower_left_corner + u * self.horizontal + v * self.vertical
-                - self.origin,
+            origin: self.origin + offset,
+            direction: self.lower_left_corner + s * self.horizontal + t * self.vertical
+                - self.origin
+                - offset,
         }
     }
 }

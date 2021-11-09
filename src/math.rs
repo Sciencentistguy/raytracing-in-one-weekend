@@ -42,11 +42,27 @@ impl Vec3 {
         let mut r = rand::thread_rng();
         Self::new(u.sample(&mut r), u.sample(&mut r), u.sample(&mut r))
     }
+    #[inline]
+    pub fn random_xy_with_range(min: f64, max: f64) -> Self {
+        let u = Uniform::new(min, max);
+        let mut r = rand::thread_rng();
+        Self::new(u.sample(&mut r), u.sample(&mut r), 0.0)
+    }
 
     #[inline]
     pub fn random_in_unit_sphere() -> Self {
         loop {
             let p = Self::random_with_range(-1.0, 1.0);
+            if p.length_squared() < 1.0 {
+                break p;
+            }
+        }
+    }
+
+    #[inline]
+    pub fn random_in_unit_disc() -> Self {
+        loop {
+            let p = Self::random_xy_with_range(-1.0, 1.0);
             if p.length_squared() < 1.0 {
                 break p;
             }

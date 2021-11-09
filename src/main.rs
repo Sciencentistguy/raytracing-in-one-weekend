@@ -75,12 +75,20 @@ fn main() {
         material: Material::Lambertian(&ground),
     }));
 
+    const CAMERA_POS: Vec3 = Vec3::newi(3, 3, 2);
+    const CAMERA_TARGET: Vec3 = Vec3::newi(0, 0, -1);
+    const VERTICAL: Vec3 = Vec3::newi(0, 1, 0);
+    let dist_to_focus = (CAMERA_POS - CAMERA_TARGET).length();
+    const CAMERA_APERTURE: f64 = 2.0;
+
     let camera = Camera::new(
-        Vec3::newi(-2, 2, 1),
-        Vec3::newi(0, 0, -1),
-        Vec3::newi(0, 1, 0),
-        Deg(90.0),
+        CAMERA_POS,
+        CAMERA_TARGET,
+        VERTICAL,
+        Deg(20.0),
         ASPECT_RATIO,
+        CAMERA_APERTURE,
+        dist_to_focus,
     );
 
     let start = std::time::Instant::now();
