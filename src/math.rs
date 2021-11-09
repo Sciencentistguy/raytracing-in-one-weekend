@@ -16,6 +16,14 @@ impl Vec3 {
         Self(Vector3 { x, y, z })
     }
 
+    pub const fn newi(x: i32, y: i32, z: i32) -> Self {
+        Self(Vector3 {
+            x: x as f64,
+            y: y as f64,
+            z: z as f64,
+        })
+    }
+
     pub const fn zero() -> Self {
         Self::new(0.0, 0.0, 0.0)
     }
@@ -311,6 +319,12 @@ impl Zero for Vec3 {
     #[inline]
     fn is_zero(&self) -> bool {
         self == &Self::zero()
+    }
+}
+
+impl From<Vector3<f64>> for Vec3 {
+    fn from(x: Vector3<f64>) -> Self {
+        Self(x)
     }
 }
 

@@ -8,6 +8,7 @@ use std::f64::INFINITY;
 
 #[allow(unused_imports)]
 use cgmath::prelude::*;
+use cgmath::Deg;
 use rand::prelude::*;
 use rayon::prelude::*;
 
@@ -49,22 +50,22 @@ fn main() {
     let mut world = HittableList(Vec::new());
 
     world.0.push(Hittable::Sphere(Sphere {
-        centre: Vec3::new(-1.0, 0.0, -1.0),
+        centre: Vec3::newi(-1, 0, -1),
         radius: -0.4,
         material: Material::Dielectric(left),
     }));
     world.0.push(Hittable::Sphere(Sphere {
-        centre: Vec3::new(-1.0, 0.0, -1.0),
+        centre: Vec3::newi(-1, 0, -1),
         radius: 0.5,
         material: Material::Dielectric(left),
     }));
     world.0.push(Hittable::Sphere(Sphere {
-        centre: Vec3::new(1.0, 0.0, -1.0),
+        centre: Vec3::newi(1, 0, -1),
         radius: 0.5,
         material: Material::Metal(&right),
     }));
     world.0.push(Hittable::Sphere(Sphere {
-        centre: Vec3::new(0.0, 0.0, -1.0),
+        centre: Vec3::newi(0, 0, -1),
         radius: 0.5,
         material: Material::Lambertian(&centre),
     }));
@@ -74,7 +75,13 @@ fn main() {
         material: Material::Lambertian(&ground),
     }));
 
-    let camera = Camera::new();
+    let camera = Camera::new(
+        Vec3::newi(-2, 2, 1),
+        Vec3::newi(0, 0, -1),
+        Vec3::newi(0, 1, 0),
+        Deg(90.0),
+        ASPECT_RATIO,
+    );
 
     let start = std::time::Instant::now();
 
