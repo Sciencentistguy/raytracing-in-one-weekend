@@ -113,13 +113,12 @@ fn ray_colour(ray: &Ray, world: &HittableList, depth: i32) -> Vec3 {
         Vec3::zero()
     } else {
         match world.hit(ray, 0.001, INFINITY) {
-            Some(hit) => match hit.material.scatter(ray, &hit) {
-                None => Vec3::zero(),
-                Some((attenuation, scattered)) => {
-                    let r = ray_colour(&scattered, world, depth - 1);
-                    attenuation * r
-                }
-            },
+            Some(hit) => {
+                let (attenuation, scattered) = hit.material.scatter(ray, &hit);
+
+                let r = ray_colour(&scattered, world, depth - 1);
+                attenuation * r
+            }
             None => {
                 let unit_dir = ray.direction.unit_vec();
                 let t = 0.5 * (unit_dir.y + 1.0);

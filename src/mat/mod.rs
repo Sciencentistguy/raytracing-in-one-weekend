@@ -13,10 +13,10 @@ pub enum Material<'a> {
 
 impl Material<'_> {
     #[inline]
-    pub fn scatter(&self, ray: &Ray, rec: &HitRecord) -> Option<(Vec3, Ray)> {
+    pub fn scatter(&self, ray: &Ray, rec: &HitRecord) -> (Vec3, Ray) {
         match self {
-            Material::Lambertian(l) => Some(l.scatter(ray, rec)),
-            Material::Metal(m) => Some(m.scatter(ray, rec)),
+            Material::Lambertian(l) => l.scatter(ray, rec),
+            Material::Metal(m) => m.scatter(ray, rec),
         }
     }
 }
