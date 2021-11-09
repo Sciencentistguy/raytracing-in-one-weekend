@@ -4,13 +4,13 @@ use crate::{mat::Material, ray::Ray, Vec3};
 
 use super::HitRecord;
 
-pub struct Sphere<'a> {
+pub struct Sphere {
     pub centre: Vec3,
     pub radius: f64,
-    pub material: Material<'a>,
+    pub material: Material,
 }
 
-impl Sphere<'_> {
+impl Sphere {
     #[inline]
     pub fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         let oc = ray.origin - self.centre;

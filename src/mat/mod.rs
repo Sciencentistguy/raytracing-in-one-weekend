@@ -2,18 +2,20 @@ pub mod dielectric;
 pub mod lambertian;
 pub mod metal;
 
+use std::sync::Arc;
+
 use crate::{hit::HitRecord, ray::Ray, Vec3};
 
 use self::{dielectric::Dielectric, lambertian::Lambertian, metal::Metal};
 
 #[derive(Clone)]
-pub enum Material<'a> {
-    Lambertian(&'a Lambertian),
-    Metal(&'a Metal),
+pub enum Material {
+    Lambertian(Arc<Lambertian>),
+    Metal(Arc<Metal>),
     Dielectric(Dielectric),
 }
 
-impl Material<'_> {
+impl Material {
     #[inline]
     pub fn scatter(&self, ray: &Ray, rec: &HitRecord) -> (Vec3, Ray) {
         match self {

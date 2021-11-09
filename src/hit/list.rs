@@ -2,9 +2,9 @@ use crate::ray::Ray;
 
 use super::{HitRecord, Hittable};
 
-pub struct HittableList<'a>(pub Vec<Hittable<'a>>);
+pub struct HittableList(pub Vec<Hittable>);
 
-impl HittableList<'_> {
+impl HittableList {
     #[inline]
     pub fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         let mut rec = None;

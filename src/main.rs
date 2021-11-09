@@ -5,6 +5,7 @@ mod math;
 mod ray;
 
 use std::f64::INFINITY;
+use std::sync::Arc;
 
 #[allow(unused_imports)]
 use cgmath::prelude::*;
@@ -25,70 +26,31 @@ use ray::Ray;
 
 use crate::mat::dielectric::Dielectric;
 
-const IMAGE_WIDTH: u32 = 1920;
-const IMAGE_HEIGHT: u32 = 1080;
-const ASPECT_RATIO: f64 = 1.777_777_777_777_777_7;
+const IMAGE_WIDTH: u32 = 2400;
+const IMAGE_HEIGHT: u32 = 3600;
+const ASPECT_RATIO: f64 = 1.5;
 
-const SAMPLES_PER_PIXEL: usize = 100;
+const SAMPLES_PER_PIXEL: usize = 1000;
 const MAX_RAY_DEPTH: i32 = 50;
 
 fn main() {
     let mut pixels = ndarray::Array2::<Vec3>::zeros((IMAGE_WIDTH as usize, IMAGE_HEIGHT as usize));
 
-    let ground = Lambertian {
-        albedo: Vec3::new(0.8, 0.8, 0.0),
-    };
-    let centre = Lambertian {
-        albedo: Vec3::new(0.1, 0.2, 0.5),
-    };
-    let left = Dielectric { ir: 1.5 };
-    let right = Metal {
-        albedo: Vec3::new(0.8, 0.6, 0.2),
-        fuzz: 0.0,
-    };
+    let world = random_scene();
 
-    let mut world = HittableList(Vec::new());
-
-    world.0.push(Hittable::Sphere(Sphere {
-        centre: Vec3::newi(-1, 0, -1),
-        radius: -0.4,
-        material: Material::Dielectric(left),
-    }));
-    world.0.push(Hittable::Sphere(Sphere {
-        centre: Vec3::newi(-1, 0, -1),
-        radius: 0.5,
-        material: Material::Dielectric(left),
-    }));
-    world.0.push(Hittable::Sphere(Sphere {
-        centre: Vec3::newi(1, 0, -1),
-        radius: 0.5,
-        material: Material::Metal(&right),
-    }));
-    world.0.push(Hittable::Sphere(Sphere {
-        centre: Vec3::newi(0, 0, -1),
-        radius: 0.5,
-        material: Material::Lambertian(&centre),
-    }));
-    world.0.push(Hittable::Sphere(Sphere {
-        centre: Vec3::new(0.0, -100.5, -1.0),
-        radius: 100.0,
-        material: Material::Lambertian(&ground),
-    }));
-
-    const CAMERA_POS: Vec3 = Vec3::newi(3, 3, 2);
-    const CAMERA_TARGET: Vec3 = Vec3::newi(0, 0, -1);
-    const VERTICAL: Vec3 = Vec3::newi(0, 1, 0);
-    let dist_to_focus = (CAMERA_POS - CAMERA_TARGET).length();
-    const CAMERA_APERTURE: f64 = 2.0;
+    const CAMERA_POS: Vec3 = Vec3::newi(13, 2, 3);
+    const CAMERA_TARGET: Vec3 = Vec3::newi(0, 0, 0);
+    const DIST_TO_FOCUS: f64 = 10.0;
+    const CAMERA_APERTURE: f64 = 0.1;
 
     let camera = Camera::new(
         CAMERA_POS,
         CAMERA_TARGET,
-        VERTICAL,
+        Vec3::UNIT_UP,
         Deg(20.0),
         ASPECT_RATIO,
         CAMERA_APERTURE,
-        dist_to_focus,
+        DIST_TO_FOCUS,
     );
 
     let start = std::time::Instant::now();
@@ -156,4 +118,86 @@ macro_rules! rand_f64 {
         use rand::Rng;
         rand::thread_rng().gen_range($rng)
     }};
+}
+
+fn random_scene() -> HittableList {
+    let mut world = HittableList(Vec::new());
+
+    const GROUND_MATERIAL: Lambertian = Lambertian {
+        albedo: Vec3::new(0.5, 0.5, 0.5),
+    };
+    const GLASS_MATERIAL: Dielectric = Dielectric { ir: 1.5 };
+    const SPHERE_2_MATERIAL: Lambertian = Lambertian {
+        albedo: Vec3::new(0.4, 0.2, 0.1),
+    };
+    const SPHERE_3_MATERIAL: Metal = Metal {
+        albedo: Vec3::new(0.7, 0.6, 0.5),
+        fuzz: 0.0,
+    };
+
+    world.0.push(Hittable::Sphere(Sphere {
+        centre: Vec3::newi(0, -1000, 0),
+        radius: 1000.0,
+        material: Material::Lambertian(Arc::new(GROUND_MATERIAL)),
+    }));
+
+    for a in -11..11 {
+        for b in -11..11 {
+            let a = a as f64;
+            let b = b as f64;
+            let choose_mat = rand_f64!();
+            let centre = Vec3::new(a + 0.9 * rand_f64!(), 0.2, b + 0.9 * rand_f64!());
+            let radius = 0.2;
+
+            if (centre - Vec3::new(4.0, 0.2, 0.0)).length() > 0.9 {
+                if choose_mat < 0.8 {
+                    let albedo = Vec3::random() * Vec3::random();
+                    let sphere_material = Lambertian { albedo };
+                    world.0.push(Hittable::Sphere(Sphere {
+                        centre,
+                        radius,
+                        material: Material::Lambertian(Arc::new(sphere_material)),
+                    }))
+                    //diffuse
+                } else if choose_mat < 0.95 {
+                    //metal
+                    let albedo = Vec3::random_with_range(0.5, 1.0);
+                    let fuzz = rand_f64!(0.0..0.5);
+                    let sphere_material = Metal { albedo, fuzz };
+                    world.0.push(Hittable::Sphere(Sphere {
+                        centre,
+                        radius,
+                        material: Material::Metal(Arc::new(sphere_material)),
+                    }))
+                } else {
+                    //glass
+                    world.0.push(Hittable::Sphere(Sphere {
+                        centre,
+                        radius,
+                        material: Material::Dielectric(GLASS_MATERIAL),
+                    }))
+                }
+            }
+        }
+    }
+
+    world.0.push(Hittable::Sphere(Sphere {
+        centre: Vec3::newi(0, 1, 0),
+        radius: 1.0,
+        material: Material::Dielectric(GLASS_MATERIAL),
+    }));
+
+    world.0.push(Hittable::Sphere(Sphere {
+        centre: Vec3::newi(-4, 1, 0),
+        radius: 1.0,
+        material: Material::Lambertian(Arc::new(SPHERE_2_MATERIAL)),
+    }));
+
+    world.0.push(Hittable::Sphere(Sphere {
+        centre: Vec3::newi(4, 1, 0),
+        radius: 1.0,
+        material: Material::Metal(Arc::new(SPHERE_3_MATERIAL)),
+    }));
+
+    world
 }

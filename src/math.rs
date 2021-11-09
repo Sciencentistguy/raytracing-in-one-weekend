@@ -12,6 +12,8 @@ use rand::{distributions::Uniform, prelude::*};
 pub struct Vec3(pub Vector3<f64>);
 
 impl Vec3 {
+    pub const UNIT_UP: Vec3 = Vec3::newi(0, 1, 0);
+
     pub const fn new(x: f64, y: f64, z: f64) -> Self {
         Self(Vector3 { x, y, z })
     }
