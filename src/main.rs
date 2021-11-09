@@ -26,11 +26,11 @@ use ray::Ray;
 
 use crate::mat::dielectric::Dielectric;
 
-const IMAGE_WIDTH: u32 = 2400;
-const IMAGE_HEIGHT: u32 = 3600;
+const IMAGE_WIDTH: u32 = 1800;
+const IMAGE_HEIGHT: u32 = 1200;
 const ASPECT_RATIO: f64 = 1.5;
 
-const SAMPLES_PER_PIXEL: usize = 1000;
+const SAMPLES_PER_PIXEL: usize = 100;
 const MAX_RAY_DEPTH: i32 = 50;
 
 fn main() {
