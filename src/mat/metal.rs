@@ -12,6 +12,7 @@ impl Metal {
         let scattered = Ray {
             origin: rec.p,
             direction: reflected + self.fuzz * Vec3::random_in_unit_sphere(),
+            time: ray.time,
         };
         (self.albedo, scattered)
     }

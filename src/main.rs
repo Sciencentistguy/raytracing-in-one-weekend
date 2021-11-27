@@ -27,9 +27,11 @@ use mat::metal::Metal;
 use mat::Material;
 use ray::Ray;
 
-const IMAGE_WIDTH: u32 = 1800;
-const IMAGE_HEIGHT: u32 = 1200;
-const ASPECT_RATIO: f64 = 1.5;
+use crate::hit::moving_sphere::MovingSphere;
+
+const IMAGE_WIDTH: u32 = 1920;
+const IMAGE_HEIGHT: u32 = 1080;
+const ASPECT_RATIO: f64 = 1.777_777_777_777_777_7;
 
 const SAMPLES_PER_PIXEL: usize = 100;
 const MAX_RAY_DEPTH: i32 = 50;
@@ -52,6 +54,8 @@ fn main() {
         ASPECT_RATIO,
         CAMERA_APERTURE,
         DIST_TO_FOCUS,
+        0.0,
+        1.0,
     );
 
     let start = std::time::Instant::now();
@@ -115,6 +119,10 @@ macro_rules! rand_f64 {
         use rand::Rng;
         rand::thread_rng().gen_range(0.0..=1.0)
     }};
+    ($beg:expr, $end:expr) => {{
+        use rand::Rng;
+        rand::thread_rng().gen_range($beg..$end)
+    }};
     ($rng:expr) => {{
         use rand::Rng;
         rand::thread_rng().gen_range($rng)
@@ -152,14 +160,18 @@ fn random_scene() -> HittableList {
 
             if (centre - Vec3::new(4.0, 0.2, 0.0)).length() > 0.9 {
                 if choose_mat < 0.8 {
+                    //diffuse
                     let albedo = Vec3::random() * Vec3::random();
                     let sphere_material = Lambertian { albedo };
-                    world.0.push(Hittable::Sphere(Sphere {
-                        centre,
+                    let centre_2 = centre + Vec3::new(0.0, rand_f64!(0.0, 0.5), 0.0);
+                    world.0.push(Hittable::MovingSphere(MovingSphere {
+                        centre_start: centre,
+                        centre_end: centre_2,
                         radius,
                         material: Material::Lambertian(Arc::new(sphere_material)),
+                        time_start: 0.0,
+                        time_end: 1.0,
                     }))
-                    //diffuse
                 } else if choose_mat < 0.95 {
                     //metal
                     let albedo = Vec3::random_with_range(0.5, 1.0);

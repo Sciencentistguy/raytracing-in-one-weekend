@@ -37,6 +37,7 @@ impl Dielectric {
             Ray {
                 origin: rec.p,
                 direction,
+                time: ray.time,
             },
         )
     }

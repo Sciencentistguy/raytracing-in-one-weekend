@@ -12,6 +12,8 @@ pub struct Camera {
     u: Vec3,
     v: Vec3,
     lens_radius: f64,
+    shutter_open_time: f64,
+    shutter_close_time: f64,
 }
 
 impl Camera {
@@ -23,6 +25,8 @@ impl Camera {
         aspect_ratio: f64,
         aperture: f64,
         focus_dist: f64,
+        shutter_open_time: f64,
+        shutter_close_time: f64,
     ) -> Self {
         let theta = Rad::from(vfov);
         let h = (theta / 2.0).tan();
@@ -50,6 +54,8 @@ impl Camera {
             u,
             v,
             lens_radius,
+            shutter_open_time,
+            shutter_close_time,
         }
     }
 
@@ -63,6 +69,11 @@ impl Camera {
             direction: self.lower_left_corner + s * self.horizontal + t * self.vertical
                 - self.origin
                 - offset,
+            time: if (self.shutter_close_time - self.shutter_open_time).abs() < f64::EPSILON {
+                self.shutter_open_time
+            } else {
+                crate::rand_f64!(self.shutter_open_time, self.shutter_close_time)
+            },
         }
     }
 }

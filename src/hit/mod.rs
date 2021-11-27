@@ -1,4 +1,5 @@
 pub mod list;
+pub mod moving_sphere;
 pub mod sphere;
 
 use std::hint::unreachable_unchecked;
@@ -31,6 +32,7 @@ impl HitRecord {
 
 pub enum Hittable {
     Sphere(sphere::Sphere),
+    MovingSphere(moving_sphere::MovingSphere),
     #[allow(dead_code)]
     List(HittableList),
 }
@@ -40,6 +42,7 @@ impl Hittable {
     pub fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         match self {
             Hittable::Sphere(sphere) => sphere.hit(ray, t_min, t_max),
+            Hittable::MovingSphere(sphere) => sphere.hit(ray, t_min, t_max),
             // Safety:
             // This variant is never constructed
             Hittable::List(_) => unsafe { unreachable_unchecked() },
