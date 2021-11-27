@@ -7,6 +7,7 @@ pub struct Camera {
     lower_left_corner: Vec3,
     horizontal: Vec3,
     vertical: Vec3,
+    #[allow(dead_code)]
     w: Vec3,
     u: Vec3,
     v: Vec3,
@@ -31,8 +32,6 @@ impl Camera {
         let w = (position - target).unit_vec();
         let u: Vec3 = vert.cross(w.0).into();
         let v: Vec3 = w.cross(u.0).into();
-
-        let focal_length = 1.0;
 
         let origin = position;
 

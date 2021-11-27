@@ -4,27 +4,28 @@ mod mat;
 mod math;
 mod ray;
 
-use std::f64::INFINITY;
+use std::f64;
 use std::sync::Arc;
 
-#[allow(unused_imports)]
-use cgmath::prelude::*;
 use cgmath::Deg;
 use rand::prelude::*;
+
+// .into_par_iter()  is often commented out for profiling, so this will scream
+#[allow(unused_imports)]
 use rayon::prelude::*;
+
+pub use math::Vec3;
 
 use camera::Camera;
 use hit::list::HittableList;
 use hit::sphere::Sphere;
 use hit::Hittable;
 use image::RgbImage;
+use mat::dielectric::Dielectric;
 use mat::lambertian::Lambertian;
 use mat::metal::Metal;
 use mat::Material;
-pub use math::Vec3;
 use ray::Ray;
-
-use crate::mat::dielectric::Dielectric;
 
 const IMAGE_WIDTH: u32 = 1800;
 const IMAGE_HEIGHT: u32 = 1200;
@@ -93,7 +94,7 @@ fn ray_colour(ray: &Ray, world: &HittableList, depth: i32) -> Vec3 {
     if depth == 0 {
         Vec3::zero()
     } else {
-        match world.hit(ray, 0.001, INFINITY) {
+        match world.hit(ray, 0.001, f64::INFINITY) {
             Some(hit) => {
                 let (attenuation, scattered) = hit.material.scatter(ray, &hit);
                 let r = ray_colour(&scattered, world, depth - 1);

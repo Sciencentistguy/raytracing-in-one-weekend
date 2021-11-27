@@ -1,4 +1,4 @@
-use cgmath::{num_traits::Pow, InnerSpace};
+use cgmath::InnerSpace;
 
 use crate::{mat::Material, ray::Ray, Vec3};
 

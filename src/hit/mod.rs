@@ -31,6 +31,7 @@ impl HitRecord {
 
 pub enum Hittable {
     Sphere(sphere::Sphere),
+    #[allow(dead_code)]
     List(HittableList),
 }
 
