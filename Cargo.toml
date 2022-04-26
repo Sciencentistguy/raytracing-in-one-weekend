@@ -7,8 +7,8 @@ edition = "2021"
 cgmath =  "0.18.0"
 image = "0.24.1"
 ndarray = { version = "0.15.4", features = ["rayon"] }
-rand = "0.8.4"
-rayon = "1.5.1"
+rand = "0.8.5"
+rayon = "1.5.2"
 
 [profile.release]
 debug = true
